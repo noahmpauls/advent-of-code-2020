@@ -8,17 +8,27 @@ using backend.Helpers;
 
 namespace backend.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
     public class DaysController : ControllerBase
     {
-        [Route("api/[controller]/{id?}")]
-        public int Get(int? id)
+        // GET: api/days/:day
+        [HttpGet("{day?}/{part?}")]
+        public int Get(int? day, int? part)
         {
-            if (id != null)
+            if (day != null && part != null)
             {
-                return DayOne.DoPartOne();
-                //return (int)id;
-            } else
+                switch (part)
+                {
+                    case 1: 
+                        return DayOne.DoPartOne();
+                    case 2:
+                        return DayOne.DoPartTwo();
+                    default:
+                        return -1;
+                }
+            }
+            else
             {
                 return -1;
             }

@@ -2,7 +2,8 @@
   <div>
     <button @click="getData">Get Answer</button>
     <button @click="clearData">Clear Answer</button>
-    <input type="text" v-model="day"/>
+    <input type="text" v-model="day" placeholder="day"/>
+    <input type="text" v-model="part" placeholder="part"/>
     {{result}}
   </div>
 </template>
@@ -15,14 +16,15 @@ export default {
   data() {
     return {
       result: "Nothing yet...",
-      day: null
+      day: null,
+      part: null
     }
   },
 
   methods: {
     getData() {
       this.result = "Loading...";
-      axios.get(`/api/days/${this.day}`)
+      axios.get(`/api/days/${this.day}/${this.part}`)
       .then(res => {
         this.result = res.data;
       })

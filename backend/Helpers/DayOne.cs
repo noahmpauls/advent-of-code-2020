@@ -27,6 +27,14 @@ namespace backend.Helpers
         public static int DoPartOne()
         {
             IList<int> nums = ProcessInputFile();
+            ISet<int> comboIndices = findComboIndices(2020, nums, new HashSet<int>(), 2, 0);
+            int result = comboIndices.Select(i => nums[i]).Aggregate(1, (acc, v) => acc * v);
+            return result;
+        }
+
+        public static int DoPartTwo()
+        {
+            IList<int> nums = ProcessInputFile();
             ISet<int> comboIndices = findComboIndices(2020, nums, new HashSet<int>(), 3, 0);
             int result = comboIndices.Select(i => nums[i]).Aggregate(1, (acc, v) => acc * v);
             return result;
