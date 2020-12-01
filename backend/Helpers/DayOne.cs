@@ -17,7 +17,7 @@ namespace backend.Helpers
             System.IO.StreamReader file = new System.IO.StreamReader(path);
             while ((line = file.ReadLine()) != null)
             {
-                Console.WriteLine(line);
+                //Console.WriteLine(line);
                 nums.Add(int.Parse(line));
             }
 
