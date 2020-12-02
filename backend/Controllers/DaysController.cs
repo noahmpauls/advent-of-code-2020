@@ -12,25 +12,47 @@ namespace backend.Controllers
     [ApiController]
     public class DaysController : ControllerBase
     {
-        // GET: api/days/:day
-        [HttpGet("{day?}/{part?}")]
-        public int Get(int? day, int? part)
+        // GET: api/days/1/:part
+        [HttpGet("1/{part?}")]
+        public IActionResult GetDayOne(int? part)
         {
-            if (day != null && part != null)
+            if (part != null)
             {
                 switch (part)
                 {
                     case 1: 
-                        return DayOne.DoPartOne();
+                        return Ok(DayOne.DoPartOne());
                     case 2:
-                        return DayOne.DoPartTwo();
+                        return Ok(DayOne.DoPartTwo());
                     default:
-                        return -1;
+                        return NotFound();
                 }
             }
             else
             {
-                return -1;
+                return NotFound();
+            }
+        }
+
+        // GET: api/days/2/:part
+        [HttpGet("2/{part?}")]
+        public IActionResult GetDayTwo(int? part)
+        {
+            if (part != null)
+            {
+                switch (part)
+                {
+                    case 1:
+                        return Ok(DayTwo.DoPartOne());
+                    case 2:
+                        return Ok(DayTwo.DoPartTwo());
+                    default:
+                        return NotFound();
+                }
+            }
+            else
+            {
+                return NotFound();
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,64 +8,124 @@ namespace backend.Helpers
 {
     public class DayOne
     {
-        private static IList<int> ProcessInputFile()
+        private static string path = @".\Assets\day-one\input.txt";
+        private static IList<int> ProcessInputFile(string path)
         {
             string line;
             IList<int> nums = new List<int>();
 
-            string path = @"C:\Users\noahm\OfflineProjects\advent-of-code-2020\backend\Assets\day-one\input.txt";
-
             System.IO.StreamReader file = new System.IO.StreamReader(path);
             while ((line = file.ReadLine()) != null)
             {
-                //Console.WriteLine(line);
                 nums.Add(int.Parse(line));
             }
 
             file.Close();
             return nums;
         }
-        public static int DoPartOne()
+
+        public static DayOneResult DoPartOne()
         {
-            IList<int> nums = ProcessInputFile();
-            ISet<int> comboIndices = findComboIndices(2020, nums, new HashSet<int>(), 2, 0);
-            int result = comboIndices.Select(i => nums[i]).Aggregate(1, (acc, v) => acc * v);
-            return result;
+            int target = 2020;
+            int comboSize = 2;
+            IList<int> nums = ProcessInputFile(path);
+            return GetDayOneResult(target, comboSize, nums);
         }
 
-        public static int DoPartTwo()
+        public static DayOneResult DoPartTwo()
         {
-            IList<int> nums = ProcessInputFile();
-            ISet<int> comboIndices = findComboIndices(2020, nums, new HashSet<int>(), 3, 0);
-            int result = comboIndices.Select(i => nums[i]).Aggregate(1, (acc, v) => acc * v);
-            return result;
+            int target = 2020;
+            int comboSize = 3;
+            IList<int> nums = ProcessInputFile(path);
+            return GetDayOneResult(target, comboSize, nums);
         }
 
-        private static ISet<int> findComboIndices(int target, IList<int> vals, ISet<int> soFar, int comboSize = 2, int depth = 0)
+        public static DayOneResult GetDayOneResult(int target, int comboSize, IList<int> nums)
         {
-            if (depth >= comboSize)
+            DayOneResult result = new DayOneResult();
+            result.InputParams = new InputParams
             {
+                TargetValue = target,
+                ComboSize = comboSize
+            };
+            result.Combos = new List<Combo>();
+            result.InputValues = nums;
+
+            IList<ISet<int>> combosIndices = FindComboIndices(target, comboSize, nums);
+            foreach (ISet<int> combo in combosIndices)
+            {
+                IList<int> indicesList = combo.ToList();
+                IList<int> valuesList = indicesList.Select(i => nums[i]).ToList();
+                int product = valuesList.Aggregate(1, (acc, val) => acc * val);
+                result.Combos.Add(new Combo
+                {
+                    Indices = indicesList,
+                    Values = valuesList,
+                    Product = product
+                });
+            }
+
+            return result;
+        }
+
+        public static IList<ISet<int>> FindComboIndices(int target, int comboSize, IList<int> vals)
+        {
+            IList<ISet<int>> combos = 
+                FindComboIndicesRec(
+                    target, 
+                    comboSize, 
+                    vals, 
+                    new HashSet<int>(), 
+                    vals.Count
+            );
+
+            return combos;
+
+        }
+
+        public static IList<ISet<int>> FindComboIndicesRec(int target, int comboSize, IList<int> vals, ISet<int> soFar, int indexBound)
+        {
+            if (soFar.Count >= comboSize)
+            {
+                IList<ISet<int>> newCombos = new List<ISet<int>>();
                 if (soFar.Select(i => vals[i]).Sum() == target)
                 {
-                    return soFar;
+                    newCombos.Add(new HashSet<int>(soFar));
                 }
-                else
-                {
-                    return new HashSet<int>();
-                }
+                return newCombos;
             }
             else
             {
-                for (int i=0; i<vals.Count; i++)
+                IList<ISet<int>> newCombos = new List<ISet<int>>();
+                int startIndex = comboSize - soFar.Count - 1;
+                for (int i = startIndex; i < indexBound; i++)
                 {
-                    if (soFar.Contains(i)) continue;
                     ISet<int> newSoFar = new HashSet<int>(soFar);
                     newSoFar.Add(i);
-                    ISet<int> result = findComboIndices(target, vals, newSoFar, comboSize, depth + 1);
-                    if (result.Count > 0) return result;
+                    newCombos = newCombos.Union(FindComboIndicesRec(target, comboSize, vals, newSoFar, i)).ToList();
                 }
-                return new HashSet<int>();
+                return newCombos;
             }
         }
+    }
+
+    public class DayOneResult
+    {
+        public IList<int> InputValues { get; set; }
+        public InputParams InputParams { get; set; }
+        public IList<Combo> Combos { get; set; }
+    }
+
+    public class InputParams
+    {
+        public int ComboSize { get; set; }
+        public int TargetValue { get; set; }
+    }
+
+    public class Combo
+    {
+        public IList<int> Indices { get; set; }
+        public IList<int> Values { get; set; }
+        public int Product { get; set; }
     }
 }

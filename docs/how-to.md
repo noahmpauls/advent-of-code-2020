@@ -21,11 +21,14 @@ module.exports = {
   devServer: {
     proxy: {
       "/api": {
-        target: "http://localhost:50028/"
+        target: "http://localhost:5000/"
       },
     }
   }
 }
 ```
 
-Initially, this didn't work because I had SSL enabled for the API (can only use HTTPS). Using [this question](https://stackoverflow.com/questions/46507029/how-to-disable-https-in-visual-studio-2017-web-proj-asp-net-core-2-0/46507122), I disabled SSL, got the right port number, and sucessfully queried data from the API.
+Running the correct launch configuration starts the API listening on port 5000.
+
+Initially, this didn't work because I had SSL enabled for the API (can only use HTTPS). Using [this question](https://stackoverflow.com/questions/46507029/how-to-disable-https-in-visual-studio-2017-web-proj-asp-net-core-2-0/46507122), I disabled SSL, got the right port number, and sucessfully queried data from the API. This needs further investigation.
+
