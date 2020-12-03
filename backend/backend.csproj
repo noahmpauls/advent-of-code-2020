@@ -5,7 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <Folder Include="Assets\day-two\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\days\days.csproj" />
   </ItemGroup>
 
 

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>backend_tests</RootNamespace>
+    <RootNamespace>days_tests</RootNamespace>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\backend\backend.csproj" />
+    <ProjectReference Include="..\days\days.csproj" />
   </ItemGroup>
 
 </Project>
