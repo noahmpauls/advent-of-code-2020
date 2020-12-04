@@ -13,7 +13,7 @@ namespace days
         public static Day03Result Part1()
         {
             const string path = Helpers.inputPath + @"\day03\input.txt";
-            IList<IList<bool>> input = ProcessInputFile(path);
+            IList<string> input = Helpers.GetFileLines(path);
 
             IList<(int, int)> slopes = new List<(int, int)>
             {
@@ -33,7 +33,7 @@ namespace days
                 Details = new Day03Details
                 {
                     Height = input.Count,
-                    Width = input[0].Count,
+                    Width = input[0].Length,
                     SlopeResults = slopeResults
                 }
             };
@@ -42,7 +42,7 @@ namespace days
         public static Day03Result Part2()
         {
             const string path = Helpers.inputPath + @"\day03\input.txt";
-            IList<IList<bool>> input = ProcessInputFile(path);
+            IList<string> input = Helpers.GetFileLines(path);
 
             IList<(int, int)> slopes = new List<(int, int)>
             {
@@ -66,7 +66,7 @@ namespace days
                 Details = new Day03Details
                 {
                     Height = input.Count,
-                    Width = input[0].Count,
+                    Width = input[0].Length,
                     SlopeResults = slopeResults
                 }
             };
@@ -76,20 +76,9 @@ namespace days
         // Methods
         //######################################################################
 
-        public static IList<IList<bool>> ProcessInputFile(string path)
+        public static long GetTreesHit(IList<string> input, int dx, int dy, char tree = '#')
         {
-            return Helpers.ProcessInputFile(path, GetTreeIndices);
-        }
-
-        public static IList<bool> GetTreeIndices(string line)
-        {
-            const char tree = '#';
-            return line.ToCharArray().Select(c => (c == tree)).ToList();
-        }
-
-        public static long GetTreesHit(IList<IList<bool>> input, int dx, int dy)
-        {
-            int width = input[0].Count;
+            int width = input[0].Length;
             int height = input.Count;
 
             int x = 0;
@@ -98,13 +87,15 @@ namespace days
 
             while (y < height)
             {
-                if (input[y][x % width]) treesHit++;
+                if (input[y][x % width] == tree) treesHit++;
                 x += dx;
                 y += dy;
             }
 
             return treesHit;
         }
+
+        // TODO: method for getting indices at which trees are hit
     }
 
     //##########################################################################
