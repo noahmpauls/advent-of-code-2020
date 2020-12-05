@@ -13,7 +13,7 @@ namespace days
         public static Day03Result Part1()
         {
             const string path = Helpers.inputPath + @"\day03\input.txt";
-            IList<string> input = Helpers.GetFileLines(path);
+            IList<string> input = Helpers.GetFileAsLines(path);
 
             IList<(int, int)> slopes = new List<(int, int)>
             {
@@ -42,7 +42,7 @@ namespace days
         public static Day03Result Part2()
         {
             const string path = Helpers.inputPath + @"\day03\input.txt";
-            IList<string> input = Helpers.GetFileLines(path);
+            IList<string> input = Helpers.GetFileAsLines(path);
 
             IList<(int, int)> slopes = new List<(int, int)>
             {

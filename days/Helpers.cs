@@ -13,18 +13,18 @@ namespace days
         // take an input file and transform it to a list of desired objects
         public static IList<T> ProcessInputFile<T>(string path, Func<string, T> transformer)
         {
-            IList<string> lines = Helpers.GetFileLines(path);
-            return ApplyTransformation(lines, transformer);
+            IList<string> lines = GetFileAsLines(path);
+            return ApplyLineTransformation(lines, transformer);
         }
 
         // apply a transformation to a list of strings
-        public static IList<T> ApplyTransformation<T>(IList<string> lines, Func<string, T> transformer)
+        public static IList<T> ApplyLineTransformation<T>(IList<string> lines, Func<string, T> transformer)
         {
             return lines.Select(line => transformer(line)).ToList();
         }
 
         // take an input file and transform it to a list of strings
-        public static IList<string> GetFileLines(string path)
+        public static IList<string> GetFileAsLines(string path)
         {
             string line;
             IList<string> lines = new List<string>();
@@ -37,6 +37,14 @@ namespace days
 
             file.Close();
             return lines;
+        }
+
+        public static string GetFileAsString(string path)
+        {
+            System.IO.StreamReader file = new System.IO.StreamReader(path);
+            string line = file.ReadToEnd();
+            file.Close();
+            return line;
         }
     }
 }
