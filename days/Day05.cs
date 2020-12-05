@@ -7,6 +7,8 @@ namespace days
 {
     public class Day05
     {
+        // TODO: change all of this to bit shifting. Bit shifting is faster.
+
         //######################################################################
         // Part 1 + 2 Solutions
         //######################################################################
