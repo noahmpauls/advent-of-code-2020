@@ -116,7 +116,7 @@ namespace days
     public class Day01Input
     {
         public string Text { get; set; }
-        public int TargetSum { get; }
+        public int TargetSum { get; set; }
         public int ComboSize { get; set; }
     }
 
