@@ -113,6 +113,13 @@ namespace days
     // Helper Classes
     //##########################################################################
 
+    public class Day01Input
+    {
+        public string Text { get; set; }
+        public int TargetSum { get; }
+        public int ComboSize { get; set; }
+    }
+
     public class Day01Result : DayResult<IList<int>, Day01Details> { }
 
     // information about a found combo

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using days;
+using System.Diagnostics;
 
 namespace backend.Controllers
 {
@@ -12,6 +13,13 @@ namespace backend.Controllers
     [ApiController]
     public class DaysController : ControllerBase
     {
+        // POST: api/echo
+        [HttpPost("echo")]
+        public IActionResult Echo([FromBody]Day01Input input)
+        {
+            return Ok(input);
+        }
+
         // GET: api/days/1/:part
         [HttpGet("1/{part?}")]
         public IActionResult GetDay01(int? part)
