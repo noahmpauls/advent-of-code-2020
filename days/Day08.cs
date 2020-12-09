@@ -15,10 +15,8 @@ namespace days
         {
             const string path = Helpers.inputPath + @"\day08\input.txt";
             IProgram input = ProcessInputFile(path);
-            // TODO: make length a method on IProgram objects rather than a visitor
-            var lv = new LengthVisitor();
-            input.Accept(lv);
-            RunVisitor v = new RunVisitor(lv.Length);
+            int programLength = input.Accept(new TotalLength());
+            Run v = new Run(programLength);
             input.Accept(v);
             return v.Accumulator;
         }
@@ -28,9 +26,7 @@ namespace days
             // TODO: make this more visitor-ey
             const string path = Helpers.inputPath + @"\day08\input.txt";
             IProgram input = ProcessInputFile(path);
-            var lv = new LengthVisitor();
-            input.Accept(lv);
-            int programLength = lv.Length;
+            int programLength = input.Accept(new TotalLength());
 
             IList<(string, int)> instructions = Helpers.ProcessInputFile(path, StringToInstruction);
             for (int i=0; i < instructions.Count; i++)
@@ -56,9 +52,8 @@ namespace days
                 }).ToList();
 
                 IProgram sequence = IProgram.MakeSequence(newInstructions);
-                RunVisitor rv = new RunVisitor(programLength);
-                sequence.Accept(rv);
-                if (rv.Terminated)
+                Run rv = new Run(programLength);
+                if (sequence.Accept(rv))
                 {
                     Console.WriteLine("Index changed: " + i);
                     return rv.Accumulator;
@@ -99,11 +94,21 @@ namespace days
     // Helper Classes
     //##########################################################################
 
+    // TODO: make a generalized visitor that takes a set of string inputs and 
+    // logs them during visiting, essentially allowing a custom visitor.
+
     // public class Day/* day */Result : DayResult<void, void> { }
 
     public interface IProgram
     {
-        public void Accept(IProgramVisitor visitor);
+        public interface IVisitor<T>
+        {
+            public T Visit(Sequence program);
+            public T Visit(NOP nop);
+            public T Visit(ACC acc);
+            public T Visit(JMP jmp);
+        }
+        public T Accept<T>(IVisitor<T> visitor);
         public static IProgram MakeSequence(IList<IProgram> instructions)
         {
             return new Sequence { Instructions = instructions };
@@ -150,9 +155,9 @@ namespace days
     {
         public IList<IProgram> Instructions { get; set; }
 
-        public void Accept(IProgramVisitor visitor)
+        public T Accept<T>(IProgram.IVisitor<T> visitor)
         {
-            visitor.Visit(this);
+            return visitor.Visit(this);
         }
     }
 
@@ -160,9 +165,9 @@ namespace days
     {
         public int Argument { get; set; } = 0;
 
-        public void Accept(IProgramVisitor visitor)
+        public T Accept<T>(IProgram.IVisitor<T> visitor)
         {
-            visitor.Visit(this);
+            return visitor.Visit(this);
         }
     }
 
@@ -170,9 +175,9 @@ namespace days
     {
         public int Argument { get; set; } = 0;
 
-        public void Accept(IProgramVisitor visitor)
+        public T Accept<T>(IProgram.IVisitor<T> visitor)
         {
-            visitor.Visit(this);
+            return visitor.Visit(this);
         }
     }
 
@@ -180,49 +185,94 @@ namespace days
     {
         public int Argument { get; set; } = 0;
 
-        public void Accept(IProgramVisitor visitor)
+        public T Accept<T>(IProgram.IVisitor<T> visitor)
         {
-            visitor.Visit(this);
+            return visitor.Visit(this);
         }
     }
 
-    // TODO: make return types generic
-    public interface IProgramVisitor
-    {
-        public void Visit(Sequence program);
-        public void Visit(NOP nop);
-        public void Visit(ACC acc);
-        public void Visit(JMP jmp);
-    }
-
-    public class LengthVisitor : IProgramVisitor
+    public class TotalLength : IProgram.IVisitor<int>
     {
         public int Length { get; set; } = 0;
-        public void Visit(Sequence program)
+        public int Visit(Sequence program)
         {
+            int length = 0;
             foreach (var instruction in program.Instructions)
             {
-                instruction.Accept(this);
+                length += instruction.Accept(this);
             }
+            return length;
         }
 
-        public void Visit(NOP nop)
+        public int Visit(NOP nop)
         {
-            Length++;
+            return 1;
         }
 
-        public void Visit(ACC acc)
+        public int Visit(ACC acc)
         {
-            Length++;
+            return 1;
         }
 
-        public void Visit(JMP jmp)
+        public int Visit(JMP jmp)
         {
-            Length++;
+            return 1;
         }
     }
 
-    public class RunVisitor : IProgramVisitor
+    public class InstructionList : IProgram.IVisitor<IList<IProgram>>
+    {
+        public IList<IProgram> Visit(Sequence program)
+        {
+            IList<IProgram> instructions = new List<IProgram>();
+            foreach (IProgram p in program.Instructions)
+            {
+                instructions = instructions.Concat(p.Accept(this)).ToList();
+            }
+            return instructions;
+        }
+
+        public IList<IProgram> Visit(NOP nop)
+        {
+            return new List<IProgram> { nop };
+        }
+
+        public IList<IProgram> Visit(ACC acc)
+        {
+            return new List<IProgram> { acc };
+        }
+
+        public IList<IProgram> Visit(JMP jmp)
+        {
+            return new List<IProgram> { jmp };
+        }
+    }
+
+    public class Flatten : IProgram.IVisitor<IProgram>
+    {
+        public IProgram Visit(Sequence program)
+        {
+            IList<IProgram> instructions = program.Accept(new InstructionList());
+            return IProgram.MakeSequence(instructions);
+        }
+
+        public IProgram Visit(NOP nop)
+        {
+            return nop;
+        }
+
+        public IProgram Visit(ACC acc)
+        {
+            return acc;
+        }
+
+        public IProgram Visit(JMP jmp)
+        {
+            return jmp;
+        }
+    }
+
+    public class Run : IProgram.IVisitor<bool>
     {
         public int ProgramCounter { get; set; } = 0;
         public int Accumulator { get; set; } = 0;
@@ -232,38 +282,42 @@ namespace days
         public bool Terminated { get; set; } = false;
         public bool DebugDisplay { get; set; } = false;
 
-        public RunVisitor(int programLength)
+        public Run(int programLength)
         {
             ProgramLength = programLength;
         }
 
-        public RunVisitor(int programLength, bool debugDisplay)
+        public Run(int programLength, bool debugDisplay)
         {
             ProgramLength = programLength;
             DebugDisplay = debugDisplay;
         }
 
-        public void Visit(Sequence program)
+        public bool Visit(Sequence program)
         {
             while (!(Looped || Terminated))
             {
                 program.Instructions[ProgramCounter].Accept(this);
             }
+            return Terminated;
         }
-        public void Visit(NOP nop)
+        public bool Visit(NOP nop)
         {
             Debug("NOP: ");
             UpdateState(1, 0);
+            return Terminated;
         }
-        public void Visit(ACC acc)
+        public bool Visit(ACC acc)
         {
             Debug("ACC: ");
             UpdateState(1, acc.Argument);
+            return Terminated;
         }
-        public void Visit(JMP jmp)
+        public bool Visit(JMP jmp)
         {
             Debug("JMP " + jmp.Argument + ": ");
             UpdateState(jmp.Argument, 0);
+            return Terminated;
         }
 
         private void UpdateState(int pcDelta, int accDelta)
@@ -293,95 +347,71 @@ namespace days
         }
     }
 
-    public class ReplaceVisitor : IProgramVisitor
+    public class ReplaceAndRun : IProgram.IVisitor<IList<Run>>
     {
-        public int ProgramCounter { get; set; } = 0;
-        public int Accumulator { get; set; } = 0;
-        public int ProgramLength { get; set; }
-        public ISet<int> IndicesRun { get; set; } = new HashSet<int>();
-        public bool Looped { get; set; } = false;
-        public bool Terminated { get; set; } = false;
-        public int IndexAltered { get; set; } = -1;
-        public bool DebugDisplay { get; set; } = false;
-
-        public void Visit(Sequence program)
+        private IProgram sourceProgram;
+        private int sourceLength;
+        public ReplaceAndRun(IProgram program)
         {
-            while (!(Looped || Terminated || IndexAltered >= 0))
-            {
-                program.Instructions[ProgramCounter].Accept(this);
-            }
-        }
-        public void Visit(ACC acc)
-        {
-            Debug("ACC: ");
-            UpdateState(1, acc.Argument);
-        }
-        public void Visit(NOP nop)
-        {
-            if (IndexAltered < 0)
-            {
-                // stop here and try two new alternate realities
-                ReplaceVisitor rvSame = new ReplaceVisitor
-                {
-                    ProgramCounter = this.ProgramCounter,
-                    Accumulator = this.Accumulator,
-                    ProgramLength = this.ProgramLength,
-                    IndicesRun = this.IndicesRun,
-                    Looped = this.Looped,
-                    Terminated = this.Terminated,
-                    IndexAltered = this.IndexAltered,
-                    DebugDisplay = this.DebugDisplay
-                };
-            }
-            if (IndexAltered == ProgramCounter)
-            Debug("NOP: ");
-            UpdateState(1, 0);
-        }
-        public void Visit(JMP jmp)
-        {
-            Debug("JMP " + jmp.Argument + ": ");
-            UpdateState(jmp.Argument, 0);
+            sourceProgram = program.Accept(new Flatten());
+            sourceLength = program.Accept(new TotalLength());
         }
 
-        private void UpdateState(int pcDelta, int accDelta)
+        IList<Run> IProgram.IVisitor<IList<Run>>.Visit(Sequence program)
         {
-            if (!(Looped || Terminated))
-            {
-                Debug(ProgramCounter + " : " + Accumulator + "\n");
-                ProgramCounter += pcDelta;
-                Accumulator += accDelta;
-                if (IndicesRun.Contains(ProgramCounter))
-                {
-                    Looped = true;
-                    Debug("looped: ");
-                    Debug(ProgramCounter + " : " + Accumulator + "\n");
-                }
-                else if (ProgramCounter >= ProgramLength)
-                {
-                    Terminated = true;
-                    Debug("terminated: ");
-                    Debug(ProgramCounter + " : " + Accumulator + "\n");
-                }
-                IndicesRun.Add(ProgramCounter);
-            }
+            IList<Run> terminated = new List<Run>();
+            // TODO
+            return terminated;
         }
 
-        private void SetState(int pc, int acc)
+        IList<Run> IProgram.IVisitor<IList<Run>>.Visit(NOP nop)
         {
-            ProgramCounter = pc;
-            Accumulator = acc;
-            if (ProgramCounter >= ProgramLength)
+            IList<Run> terminated = new List<Run>();
+            Run nopRun = new Run(1);
+            if (nop.Accept(nopRun))
             {
-                Terminated = true;
-                Debug("terminated: ");
-                Debug(ProgramCounter + " : " + Accumulator + "\n");
+                terminated.Add(nopRun);
             }
+
+            IProgram jmp = IProgram.MakeNOP(nop.Argument);
+            Run jmpRun = new Run(1);
+            if (jmp.Accept(jmpRun))
+            {
+                terminated.Add(jmpRun);
+            }
+
+            return terminated;
         }
 
-        private void Debug(string text)
+        IList<Run> IProgram.IVisitor<IList<Run>>.Visit(ACC acc)
         {
-            if (DebugDisplay) Console.Write(text);
+            IList<Run> terminated = new List<Run>();
+            Run accRun = new Run(1);
+            if (acc.Accept(accRun))
+            {
+                terminated.Add(accRun);
+            }
+
+            return terminated;
+        }
+
+        IList<Run> IProgram.IVisitor<IList<Run>>.Visit(JMP jmp)
+        {
+            IList<Run> terminated = new List<Run>();
+            Run jmpRun = new Run(1);
+            if (jmp.Accept(jmpRun))
+            {
+                terminated.Add(jmpRun);
+            }
+
+            IProgram nop = IProgram.MakeNOP(jmp.Argument);
+            Run nopRun = new Run(1);
+            if (nop.Accept(nopRun))
+            {
+                terminated.Add(nopRun);
+            }
+
+            return terminated;
         }
     }
-
 }
