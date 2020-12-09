@@ -49,7 +49,8 @@ namespace days
         }
 
         /* Main idea: provide a method for quickly referencing active sums,
-         *  removing old sums, and adding new ones.
+         *  removing old sums, and adding new ones. The solution is a type of
+         *  sliding window.
          *  
          * The `sumsAfter` dictionary has an index as a key, and a list of all
          *  the sums it creates with the indices that come after it. This way,
@@ -68,13 +69,13 @@ namespace days
          * 
          * TODO: make DRYer
          * TODO: make more general, allowing for an arbitrary combo size
-         * TODO: make `sumCounts` its own ADT to track counts of things
          */
         public static IList<int> InvalidIndices(IList<long> sequence, int preamble)
         {
-            // initialize preamble
-            IDictionary<long, int> sumCounts = new Dictionary<long, int>();
+            Counter<long> sumCounts = new Counter<long>();
             IDictionary<int, IList<long>> sumsAfter = new Dictionary<int, IList<long>>();
+
+            // initialize preamble
             for (int i = 0; i < preamble; i++)
             {
                 sumsAfter[i] = new List<long>();
@@ -84,8 +85,7 @@ namespace days
                     {
                         long sum = sequence[i] + sequence[j];
                         sumsAfter[i].Add(sum);
-                        if (!sumCounts.ContainsKey(sum)) sumCounts[sum] = 0;
-                        sumCounts[sum]++;
+                        sumCounts.Add(sum);
                     }
                 }
             }
@@ -96,12 +96,13 @@ namespace days
             for (int i = preamble; i < sequence.Count; i++)
             {
                 long test = sequence[i];
-                if (!sumCounts.ContainsKey(test)) invalidIndices.Add(i);
+                if (!sumCounts.Contains(test))
+                    invalidIndices.Add(i);
 
                 int tailIndex = i - preamble;
                 foreach (long oldSum in sumsAfter[tailIndex])
                 {
-                    if (--sumCounts[oldSum] == 0) sumCounts.Remove(oldSum);
+                    sumCounts.Remove(oldSum);
                 }
                 sumsAfter.Remove(tailIndex);
 
@@ -112,8 +113,7 @@ namespace days
                     {
                         long newSum = sequence[i] + sequence[j];
                         sumsAfter[j].Add(newSum);
-                        if (!sumCounts.ContainsKey(newSum)) sumCounts[newSum] = 0;
-                        sumCounts[newSum]++;
+                        sumCounts.Add(newSum);
                     }
                 }
             }
@@ -176,5 +176,53 @@ namespace days
     //##########################################################################
 
     // public class Day/* day */Result : DayResult<void, void> { }
+
+    public class Counter<T>
+    {
+        private readonly IDictionary<T, int> itemCounts = new Dictionary<T, int>();
+
+        public bool Contains(T item)
+        {
+            return (itemCounts.ContainsKey(item));
+        }
+
+        public bool Contains(T item, int count)
+        {
+            return (itemCounts.ContainsKey(item) && itemCounts[item] >= count);
+        }
+
+        public void Add(T item)
+        {
+            if (!itemCounts.ContainsKey(item))
+                itemCounts[item] = 0;
+            itemCounts[item]++;
+        }
+
+        public void Add(T item, int count)
+        {
+            if (!itemCounts.ContainsKey(item))
+                itemCounts[item] = 0;
+            itemCounts[item] += count;
+        }
+
+        public void Remove(T item)
+        {
+            if (!itemCounts.ContainsKey(item))
+                throw new ArgumentOutOfRangeException($"No existing occurences of {item}");
+            if (--itemCounts[item] == 0)
+                itemCounts.Remove(item);
+        }
+
+        public void Remove(T item, int count)
+        {
+            if (!itemCounts.ContainsKey(item))
+                throw new ArgumentOutOfRangeException($"No existing occurences of {item}");
+            if (itemCounts[item] - count < 0)
+                throw new ArgumentOutOfRangeException($"Tried to remove {count} occurrences, but there are only {itemCounts[item]}");
+            itemCounts[item] -= count;
+            if (itemCounts[item] == 0)
+                itemCounts.Remove(item);
+        }
+    }
 
 }
