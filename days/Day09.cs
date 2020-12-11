@@ -179,16 +179,25 @@ namespace days
 
     public class Counter<T>
     {
-        private readonly IDictionary<T, int> itemCounts = new Dictionary<T, int>();
+        private readonly IDictionary<T, long> itemCounts = new Dictionary<T, long>();
 
         public bool Contains(T item)
         {
             return (itemCounts.ContainsKey(item));
         }
 
-        public bool Contains(T item, int count)
+        public bool Contains(T item, long count)
         {
             return (itemCounts.ContainsKey(item) && itemCounts[item] >= count);
+        }
+
+        public long Count(T item)
+        {
+            if (!Contains(item))
+            {
+                return 0;
+            }
+            return itemCounts[item];
         }
 
         public void Add(T item)
@@ -198,7 +207,7 @@ namespace days
             itemCounts[item]++;
         }
 
-        public void Add(T item, int count)
+        public void Add(T item, long count)
         {
             if (!itemCounts.ContainsKey(item))
                 itemCounts[item] = 0;
@@ -207,15 +216,15 @@ namespace days
 
         public void Remove(T item)
         {
-            if (!itemCounts.ContainsKey(item))
+            if (!Contains(item))
                 throw new ArgumentOutOfRangeException($"No existing occurences of {item}");
             if (--itemCounts[item] == 0)
                 itemCounts.Remove(item);
         }
 
-        public void Remove(T item, int count)
+        public void Remove(T item, long count)
         {
-            if (!itemCounts.ContainsKey(item))
+            if (!Contains(item))
                 throw new ArgumentOutOfRangeException($"No existing occurences of {item}");
             if (itemCounts[item] - count < 0)
                 throw new ArgumentOutOfRangeException($"Tried to remove {count} occurrences, but there are only {itemCounts[item]}");
