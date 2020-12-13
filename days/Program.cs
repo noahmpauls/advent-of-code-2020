@@ -10,8 +10,11 @@ namespace days
         {
             Console.WriteLine("Begin");
 
-            Console.WriteLine(Day12.Part1());
-            Console.WriteLine(Day12.Part2());
+            Console.WriteLine("Part 1 ----------------------------------------");
+            Console.WriteLine(Day13.Part1());
+            Console.WriteLine("");
+            Console.WriteLine("Part 2 ----------------------------------------");
+            Console.WriteLine(Day13.Part2());
 
             Console.WriteLine("End");
         }
