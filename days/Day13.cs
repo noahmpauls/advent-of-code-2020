@@ -62,7 +62,6 @@ namespace days
                 .Select((id, index) => { if (id > 1) return index; else return -1; })
                 .Where(i => i >= 0)
                 .ToList();
-            Console.WriteLine($"  idIndices: {idIndices.Count}");
 
             // whether this index is considered in the multipleToAdd variable
             IDictionary<int, bool> lockedIn = new Dictionary<int, bool>();
@@ -71,12 +70,6 @@ namespace days
             lockedIn[largestIndex] = true;
             while (true)
             {
-                if (t - tDebug > 1000000000000)
-                {
-                    Console.WriteLine($"  {t}");
-                    tDebug = t;
-                }
-                //Console.WriteLine($"  {t}");
                 foreach (int i in idIndices)
                 {
                     if ((t + i) % ids[i] == 0 && !lockedIn[i])
@@ -84,12 +77,6 @@ namespace days
                         // MULTIPLY THE NUMBER TO ADD BY ids[i] ONCE ids[i] WORKS WITH THE CURRENT t VALUE
                         multipleToAdd *= ids[i];
                         lockedIn[i] = true;
-                        Console.Write("  LockedIn: ");
-                        foreach (var k in lockedIn.Keys)
-                        {
-                            Console.Write($"   {k}: {lockedIn[k]}");
-                        }
-                        Console.Write('\n');
                         if (lockedIn.Values.Aggregate(true, (acc, val) => acc & val))
                         {
                             return t;
