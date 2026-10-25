@@ -1,0 +1,11 @@
+[workspace]
+
+members = [
+    "19_monster_messages",
+    "20_jurassic_jigsaw",
+    "21_allergen_assessment",
+    "22_crab_combat",
+    "23_crab_cups",
+    "24_lobby_layout",
+    "25_combo_breaker",
+]
